@@ -17,15 +17,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.com.okayamafilho.tpedrapapelcompose.ui.theme.TPedraPapelComposeTheme
+import java.util.Random
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,23 +52,81 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Cabecalho("Escolha o App")
-        RoundImageButtonsRowEscolhaPreview()
-        EscolhaOpcao(text1 = "Escolha uma opcao")
-        RoundImageButtonsRowPreview()
-
+        EscolhaApp("Escolha o App")
+        ResultadoEscolhaApp()
+        EscolhaApp( "Escolha uma opcao")
+        LinhaImagemButton()
     }
 }
 
 @Composable
-fun RoundImageButtonsRow(
-    imagePapel: Painter,
-    imagePedra: Painter,
-    imageTesoura: Painter,
-    onClickImage1: () -> Unit,
-    onClickImage2: () -> Unit,
-    onClickImage3: () -> Unit
-) {
+fun EscolhaApp(text1: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 80.dp),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = text1, fontSize = 18.sp)
+    }
+}
+
+@Composable
+fun ResultadoEscolhaApp() {
+    var escolhaApp by remember { mutableStateOf("") }
+    escolhaApp =  gerarEscolhaAleatoriaApp()
+
+    val painterImage = when (escolhaApp) {
+        "Pedra" -> painterResource(id = R.drawable.pedra)
+        "Papel" -> painterResource(R.drawable.papel)
+        "Tesoura" -> painterResource(R.drawable.tesoura)
+        else -> painterResource(id = R.drawable.padrao)
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 26.dp),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterImage,
+            contentDescription = "Imagem Papel",
+            modifier = Modifier
+                .size(140.dp)
+                .clip(CircleShape)
+        )
+    }
+}
+
+@Composable
+fun LinhaImagemButton() {
+
+    val imagePapel = painterResource(id = R.drawable.papel)
+    val imagePedra = painterResource(id = R.drawable.pedra)
+    val imageTesoura = painterResource(id = R.drawable.tesoura)
+    var resultado by remember { mutableStateOf("Resultado final") }
+    
+    fun verificarGanhador(valorResultado: String) {
+        val escolhaApp: String = gerarEscolhaAleatoriaApp()
+
+        if ((escolhaApp === "Pedra" && valorResultado === "Tesoura") ||
+            (escolhaApp === "Papel" && valorResultado === "Pedra") ||
+            (escolhaApp === "Tesoura" && valorResultado === "Papel")
+        ) { // App é ganhador
+            resultado = "Você perdeu :("
+        } else if ((valorResultado === "Pedra" && escolhaApp === "Tesoura") ||
+            (valorResultado === "Papel" && escolhaApp === "Pedra") ||
+            (valorResultado === "Tesoura" && escolhaApp === "Papel")
+        ) { // Usuário é ganhador
+            resultado= "Você ganhou :("
+        } else { //Empatou
+            resultado = "Empatamos :)"
+        }
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -71,13 +134,15 @@ fun RoundImageButtonsRow(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Botão
+
         Image(
             painter = imagePapel,
             contentDescription = "Imagem Papel",
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
-                .clickable { onClickImage1() }
+                .clickable { verificarGanhador("Papel") }
         )
         Image(
             painter = imagePedra,
@@ -85,7 +150,7 @@ fun RoundImageButtonsRow(
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
-                .clickable { onClickImage2() }
+                .clickable { verificarGanhador("Pedra") }
         )
         Image(
             painter = imageTesoura,
@@ -93,53 +158,17 @@ fun RoundImageButtonsRow(
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
-                .clickable { onClickImage3() }
+                .clickable { verificarGanhador("Tesoura")  }
         )
     }
 
-    ThreeTextsRow("Papel", "Pedra", "Tesoura")
+    LinhaTextoOpcao("Papel", "Pedra", "Tesoura")
+
+    Resultado(resultado)
 }
 
 @Composable
-fun RoundImageButtonsRowPreview() {
-    RoundImageButtonsRow(
-        imagePapel = painterResource(id = R.drawable.papel),
-        imagePedra = painterResource(id = R.drawable.pedra),
-        imageTesoura = painterResource(id = R.drawable.tesoura),
-        onClickImage1 = { /* Ação da imagem 1 */ },
-        onClickImage2 = { /* Ação da imagem 2 */ },
-        onClickImage3 = { /* Ação da imagem 3 */ }
-    )
-}
-
-@Composable
-fun Cabecalho(text1: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 80.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = text1, fontSize = 18.sp)
-    }
-}
-
-@Composable
-fun EscolhaOpcao(text1: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 80.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = text1, fontSize = 18.sp)
-    }
-}
-
-@Composable
-fun ThreeTextsRow(text1: String, text2: String, text3: String) {
+fun LinhaTextoOpcao(text1: String, text2: String, text3: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -153,36 +182,24 @@ fun ThreeTextsRow(text1: String, text2: String, text3: String) {
     }
 }
 
-
 @Composable
-fun RoundImageButtonsRowEscolha(
-    imagePapel: Painter,
-    onClickImage1: () -> Unit,
-) {
+fun Resultado(text1: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 26.dp),
+            .padding(start = 24.dp, top = 24.dp, bottom = 4.dp),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = imagePapel,
-            contentDescription = "Imagem Papel",
-            modifier = Modifier
-                .size(140.dp)
-                .clip(CircleShape)
-                .clickable { onClickImage1() }
-        )
+        Text(text = text1, fontSize = 24.sp, fontWeight = FontWeight(600))
     }
 }
 
-@Composable
-fun RoundImageButtonsRowEscolhaPreview() {
-    RoundImageButtonsRowEscolha(
-        imagePapel = painterResource(id = R.drawable.padrao),
-        onClickImage1 = { /* Ação da imagem 1 */ },
-    )
+fun gerarEscolhaAleatoriaApp(): String {
+    val opcoes = arrayOf("Pedra", "Papel", "Tesoura")
+    val numeroAleatorio = Random().nextInt(3)
+    val escolhaApp = opcoes[numeroAleatorio]
+    return escolhaApp
 }
 
 @Preview(showBackground = true)
